@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冷氣機工作原理動態示範</title>
+    <style>
+        :root {
+            --cold-blue: #00d4ff;
+            --hot-red: #ff4b2b;
+            --pipe-gray: #ccc;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 { color: #333; text-align: center; }
+
+        #canvas-container {
+            width: 100%;
+            height: auto;
+            margin: 20px 0;
+        }
+
+        /* SVG 樣式 */
+        .pipe { fill: none; stroke: var(--pipe-gray); stroke-width: 12; stroke-linecap: round; }
+        .flow-line { fill: none; stroke-width: 6; stroke-dasharray: 10, 15; animation: flow 2s linear infinite; }
+        
+        @keyframes flow {
+            from { stroke-dashoffset: 50; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .component { cursor: pointer; transition: 0.3s; }
+        .component:hover { filter: brightness(1.1); transform: scale(1.02); }
+        .label { font-size: 14px; font-weight: bold; fill: #444; pointer-events: none; }
+
+        /* 說明面板 */
+        #info-panel {
+            background: #eef2f3;
+            padding: 15px;
+            border-left: 5px solid #2196F3;
+            border-radius: 4px;
+            min-height: 80px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover { background: #1976D2; }
+
+        .heat-arrow { font-size: 24px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>❄️ 冷氣機運作原理動態演示</h1>
+    
+    <div class="controls">
+        <button onclick="togglePower()">開關電源</button>
+        <button onclick="changeSpeed()">加速循環</button>
+    </div>
+
+    <div id="canvas-container">
+        <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#666" />
+                </marker>
+            </defs>
+
+            <rect x="20" y="50" width="350" height="350" rx="10" fill="#e3f2fd" stroke="#bbdefb" />
+            <text x="150" y="40" text-anchor="middle" font-weight="bold">室內機 (蒸發器側)</text>
+            
+            <rect x="430" y="50" width="350" height="350" rx="10" fill="#fff3e0" stroke="#ffe0b2" />
+            <text x="600" y="40" text-anchor="middle" font-weight="bold">室外機 (壓縮機側)</text>
+
+            <path id="main-loop" class="pipe" d="M 200 150 L 500 150 L 600 150 L 600 300 L 200 300 L 200 150" />
+            
+            <path id="flow-high" class="flow-line" d="M 600 230 L 600 300 L 200 300" stroke="var(--hot-red)" />
+            <path id="flow-low" class="flow-line" d="M 200 300 L 200 150 L 600 150 L 600 230" stroke="var(--cold-blue)" />
+
+            <g class="component" onclick="showInfo('compressor')">
+                <circle cx="600" cy="230" r="40" fill="#555" />
+                <text x="600" y="235" text-anchor="middle" fill="white" font-size="12">壓縮機</text>
+            </g>
+
+            <g class="component" onclick="showInfo('valve')">
+                <rect x="380" y="280" width="40" height="40" fill="#9c27b0" />
+                <text x="400" y="335" text-anchor="middle" class="label">膨脹閥</text>
+            </g>
+
+            <g class="component" onclick="showInfo('evaporator')">
+                <path d="M 180 150 Q 200 130 220 150 T 260 150" fill="none" stroke="#2196F3" stroke-width="4" />
+                <rect x="150" y="160" width="100" height="60" rx="5" fill="#bbdefb" />
+                <text x="200" y="195" text-anchor="middle" font-size="12">蒸發器</text>
+            </g>
+
+            <g class="component" onclick="showInfo('condenser')">
+                <rect x="550" y="60" width="100" height="60" rx="5" fill="#ffab91" />
+                <text x="600" y="95" text-anchor="middle" font-size="12">冷凝器</text>
+            </g>
+
+            <text x="100" y="200" class="heat-arrow">♨️</text>
+            <path d="M 60 190 L 140 190" stroke="#2196F3" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="60" y="220" font-size="12">吸收室內熱量</text>
+
+            <text x="700" y="100" class="heat-arrow">🔥</text>
+            <path d="M 650 90 L 730 90" stroke="#f44336" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="680" y="125" font-size="12">排出熱量</text>
+        </svg>
+    </div>
+
+    <div id="info-panel">
+        <strong>操作指引：</strong> 點擊上方的組件（壓縮機、蒸發器等）來查看它們的功能說明。
+    </div>
+</div>
+
+<script>
+    const infoData = {
+        compressor: "【壓縮機】：心臟部位。將低壓低溫的氣態冷媒壓縮成「高壓高溫」的氣體，推動循環。",
+        condenser: "【冷凝器】：散熱器。高溫冷媒在此將熱量釋放到室外空氣中，冷媒從氣態冷凝成「高壓液態」。",
+        valve: "【膨脹閥】：節流裝置。讓高壓液體急速降壓，冷媒變得「低壓低溫」，準備進入室內吸熱。",
+        evaporator: "【蒸發器】：製冷核心。低溫冷媒在此吸收室內熱量並蒸發，使室內溫度下降。"
+    };
+
+    let isRunning = true;
+    let speed = 2;
+
+    function showInfo(part) {
+        const panel = document.getElementById('info-panel');
+        panel.innerHTML = infoData[part];
+        panel.style.borderLeftColor = part === 'evaporator' ? '#00d4ff' : '#ff4b2b';
+    }
+
+    function togglePower() {
+        isRunning = !isRunning;
+        const flows = document.querySelectorAll('.flow-line');
+        flows.forEach(f => f.style.animationPlayState = isRunning ? 'running' : 'paused');
+        document.getElementById('info-panel').innerText = isRunning ? "系統已啟動，循環運行中..." : "系統已關機。";
+    }
+
+    function changeSpeed() {
+        if (!isRunning) return;
+        speed = speed <= 0.5 ? 2 : speed / 2;
+        const flows = document.querySelectorAll('.flow-line');
+        flows.forEach(f => f.style.animationDuration = speed + 's');
+    }
+</script>
+
+</body>
+</html>
